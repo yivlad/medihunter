@@ -10,6 +10,7 @@ from typing import Callable, List
 import click
 import os
 from dotenv import load_dotenv
+import pickle
 
 from medicover_session import (
     Appointment,
@@ -31,11 +32,16 @@ def make_duplicate_checker() -> Callable[[Appointment], bool]:
         False otherwise
     """
     found_appointments: List[Appointment] = []
+    with open('/tmp/medihunter/found_appointments', 'rb') as handle:
+        found_appointments = pickle.load(handle)
 
     def duplicate_checker(appointment: Appointment) -> bool:
-        if appointment in found_appointments:
-            return False
+        for fa in found_appointments:
+            if str(fa) == str(appointment):
+                return False
         found_appointments.append(appointment)
+        with open('/tmp/medihunter/found_appointments', 'wb') as handle:
+            pickle.dump(found_appointments, handle)
         return True
 
     return duplicate_checker
