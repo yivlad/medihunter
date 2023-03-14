@@ -32,15 +32,18 @@ def make_duplicate_checker() -> Callable[[Appointment], bool]:
         False otherwise
     """
     found_appointments: List[Appointment] = []
-    with open('/tmp/medihunter/found_appointments', 'rb') as handle:
-        found_appointments = pickle.load(handle)
+    storage_file = '/tmp/medihunter/found_appointments'
+    if os.path.isfile(storage_file) and os.path.getsize(storage_file) > 0:    
+        with open(storage_file, 'rb') as handle:
+            found_appointments = pickle.load(handle)
 
     def duplicate_checker(appointment: Appointment) -> bool:
         for fa in found_appointments:
             if str(fa) == str(appointment):
                 return False
         found_appointments.append(appointment)
-        with open('/tmp/medihunter/found_appointments', 'wb') as handle:
+        os.makedirs(os.path.dirname(storage_file), exist_ok=True)
+        with open(storage_file, 'wb') as handle:
             pickle.dump(found_appointments, handle)
         return True
 
